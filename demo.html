@@ -1,0 +1,666 @@
+<!--
+    Powered By nodeppt - This is probably the best web presentation tool so far!
+    version: 1.4.5
+    site: https://github.com/ksky521/nodeppt
+    date: 
+-->
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>从医学文献的表格中提取患者数据 - By wanghaisheng</title>
+    <link rel="stylesheet" media="all" href="./css/nodeppt.css">
+    <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="./css/phone.css">
+    
+    <link rel="stylesheet" href="./js/highlight/styles/monokai_sublime.css">
+    <link rel="stylesheet" href="./css/font-awesome.css">
+    
+<link rel="stylesheet" href="./css/theme.dark.css">
+</head>
+<body>
+<div class="slides">
+    <slides id="container">
+        <slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>从医学文献的表格中提取患者数据</h1>
+<h2>如何提取患者的BMI、体重和数量</h2>
+<p><small style="vertical-align:middle;display:inline-block"><iframe src="http://ghbtns.com/github-btn.html?user=data-liberation&repo=data-liberation-resources&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20" style="width:110px;height:20px;  background-color: transparent;"></iframe><iframe src="http://ghbtns.com/github-btn.html?user=data-liberation&repo=data-liberation-resources&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20" style="width:110px;height:20px;  background-color: transparent;"></iframe><iframe src="http://ghbtns.com/github-btn.html?user=data-liberation&repo=data-liberation-resources&type=follow&count=false" allowtransparency="true" frameborder="0" scrolling="0" width="170" height="20" style="width:170px;height:20px;  background-color: transparent;"></iframe></small></p>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<p>Medline 是数据库 pubmed是搜索引擎
+PMC 全称为 PubMed Central，建立于 2000 年，由 NCBI 进行管理，是可以免费获取全文的生物医学和生命科学全文数据库，保存了 NLM 收录印刷杂志的电子副本。PMC 的核心原则是开放获取全文。PMC 并不出版文献，而是收集参与杂志及符合研究资助条件的作者提交文献全文。
+<img src="./IMG/PubMed-PMC-MEDLINE.png" height="150"></p>
+<p>新药研发、疾病治疗的研究产生了大量的临床试验文献。其中的表格可以了解参与人员的基本信息、trial arms, names and the side effects of the tested drugs、interactions between biomedical substances, such as drug-drug or protein-protein interactions</p>
+<p>第二大是药品说明书数据库(Drugs@FDA、FDA Online Label Repository和DailyMed)，如何从数据库的说明书文件中提取药物配伍禁忌</p>
+<p>MEDLINE,PMC and DailyMed中文献都提供XML格式下载</p>
+<p><a href="https://github.com/cstubben/pmcXML/blob/2b0fb3465dff00dbb13f3552d4c21f4de5ec3a70/R/pmcOAI.R" target="_blank">https://github.com/cstubben/pmcXML/blob/2b0fb3465dff00dbb13f3552d4c21f4de5ec3a70/R/pmcOAI.R</a></p>
+<p><a href="https://dtd.nlm.nih.gov/archiving/tag-library/3.0/index.html" target="_blank">https://dtd.nlm.nih.gov/archiving/tag-library/3.0/index.html</a></p>
+
+</section>
+</aside><section class="slide-wrapper"><hgroup>
+<h2>临床试验的文献</h2>
+
+</hgroup><article>
+
+<ul class="rollIn">
+<li>MEDLINE 30种语言5600种杂志包含27,000,000+份文献</li>
+<li>MEDLINE 包含近80万临床试验文献</li>
+<li>科研人员如何面对数量呈指数级增长的文献！
+<img src="./IMG/mediline-literatures.png" height="450"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide" data-on-keypress="globalCallbackName"><section class="slide-wrapper"><article>
+<h2>借力数据挖掘？</h2>
+<ul class="flexbox vleft">
+<li>大规模文本处理的挖掘技术</li>
+<li>当下大多数挖掘技术着重在纯文本，<strong>表格、图形</strong>被忽略
+<img src="./IMG/text_data_mining.jpg" height="450"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<p><img src="./IMG/pmc-literatures.png" height="250"></p>
+<p>DailyMed:This website contains 102740 drug listings as submitted to the Food and Drug Administration (FDA).</p>
+<p>目的：为药学工作人员根据不同需求选择不同的药品说明书数据库提供参考。方法：搜集Drugs@FDA、FDA Online Label Repository和DailyMed三大开放获取药品说明书数据库的信息组织方式，从检索功能设置、检索结果显示内容、数据来源与服务目标三个方面进行比较分析。结果与结论：在检索功能上，以DailyMed最丰富；在检索结果显示内容上，DailyMed的数据格式化程度最高，FDA Online Label Repository次之，而Drugs@FDA只进行了部分格式化；3个数据库都提供页面复制和打印的功能，其中DailyMed的界面更为友好、内容更开放、提供了全部下载功能；在数据来源与服务目标上，Drugs@FDA和FDA Online Label Repository的系统开发者都为FDA，DailyMed为美国国立医学图书馆，Drugs@FDA采用的数据来源为经过FDA严格审批之后的药品说明书，对某一药品信息的描述最全面；FDA Online Label Repository则为厂商提交给FDA的原始说明书，其内容最新，甚至有未上市的药品；DailyMed采用的数据来源取自于已上市的药品包装盒上的信息，还包括很多上市但未经过严格审批的说明书信息，其覆盖药品最全。</p>
+
+</section>
+</aside><section class="slide-wrapper"><article>
+<h2>医学文档中的表格</h2>
+<ul class="flexbox vleft">
+<li>PMC数据库中72%的文章都有表格，3.1个表格/每个文章</li>
+<li>NLM的DailyMed数据库中药品说明书，4.1个表格/每份说明书</li>
+<li>表格通常与临床试验设计和结论相关 
+<img src="./IMG/trial.png" height="450"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<p>Representation for visualization. Tables are primarily used in a way that data can
+be easily viewed. Most methods and languages that support describing tables, including
+XML, HTML or LaTex, are designed with the focus on visualisation. In mark-up
+languages, tables contain a lot of information about what a table should look like (see
+Figure 1.8), but very little about how the table entries relate (Thompson 1996, Hurst
+&amp; Douglas 1997). Since the focus is on visualisation and visual representation, a table
+author only needs to focus on the visual appearance of the table, ignoring description
+of the functions of areas or relationships. Therefore, reading and computational analysis
+of tables described in this manner require a method that is able to disentangle visual
+structure before further analysis</p>
+<p>Variety of tables structural layouts and visual relationships. There is no ”common”
+table structure. The combination of cell arrangement, their spanning, content,
+and function (headings or data) determine how the table is read and understood. Cells
+can span over several other cells both horizontally and vertically. Some of the examples
+of tabular structures are presented in Figure 1.9. Cells in a table are visually
+related, presenting multiple dimensions and annotations of the data, in contrast to linear
+textual information. Tables are flexible in their structure, providing authors with
+means to shape them according to their data presentation needs. Table structure makes
+automated detection of functional areas (functional analysis of table) and resolving
+inter-cell relationships (structural analysis of table) challenging. Table layouts and
+their visual relationships are not specific to any domain. Complex tables can be found
+in any domain. However, domain specific knowledge is useful for detecting functional
+areas or resolving relationships within the table. Evaluation and creation of new machine
+learning-based approaches to disentangle visual layouts will be simplified if gold
+standard annotated corpora existed. Several annotation schemas have been proposed
+for annotating textual resources and over the time they have been standardised. At the
+moment there is almost no commonly accepted annotation schema for tables, neither
+research on how table content should be annotated, while preserving the structure and
+relationships between the cells.</p>
+<p>Variety of value presentation formats. Values in cells can be presented using various
+syntactic representation formats. While some authors may present mean and standard
+deviation in one cell using the plus-minus () sign (i.e. 122), some will use
+brackets (i.e. 12(2)) and some will use two separate cells. Extraction of these values
+requires knowledge of possible value presentation patterns article authors most
+frequently use in tables. The value presentation formats may be different in different
+research domains. Often same representation format can be used for presenting
+different things in different domains. For example, presentation, such as 122, in
+biomedical literature would usually indicate mean or median with standard deviation,
+while in computer science domain it may be often used for mean and standard error.</p>
+<p>The goal of table mining is to make table information easily accessible and to interpret
+tables automatically. The process of making published information from literature
+in various sources structured, managed, searchable and easily accessible in the future,
+while maintaining value, is commonly referred as data curation (Choudhury 2008). If
+done manually, data curation is a laborious and expensive task. Automated or assisted
+curation can speed up curation process by more than 70% and help make information
+computationally interpretable (Alex et al. 2008).</p>
+<p>In order to successfully process table and extract information from them, these
+challenges need to be addressed.</p>
+
+</section>
+</aside><section class="slide-wrapper"><article>
+<h2>表格数据挖掘的挑战</h2>
+<ul class="flexbox vleft">
+<li><p>内容庞杂</p>
+</li>
+<li><p>版式多样</p>
+</li>
+<li><p>数据类型多样</p>
+</li>
+<li><p>容易误解的可视化表达方式</p>
+</li>
+<li><p>缺少标记好的训练数据</p>
+</li>
+<li><p>如何从XML、TXT、PDF、JPG中自动化提取</p>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><hgroup>
+<h2>案例</h2>
+
+</hgroup><article>
+
+<ul>
+<li>从临床试验文献的表格中提取患者数量、患者BMI和体重数据</li>
+<li>多层次挖掘方法处理表格中的信息<ul>
+<li>实现大规模半自动化提取</li>
+<li>表格中数据再加工整理</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><hgroup>
+<h2>我们所选用的方法</h2>
+
+</hgroup><article>
+
+<ul>
+<li>基于规则的<ul>
+<li>针对收集的表格人工分析，整理出规则</li>
+</ul>
+</li>
+<li>三步法<ul>
+<li>表格检测</li>
+<li>功能性分析</li>
+<li>信息抽取/语义分析</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<p>(1) table detection, (2) functional analysis, (3) structural analysis, (4) semantic
+tagging, (5) pragmatic analysis, (6) cell selection and (7) syntactic processing
+and extraction.</p>
+
+</section>
+</aside><section class="slide-wrapper"><hgroup>
+<h2>方法概述</h2>
+
+</hgroup><article>
+
+<img src="./IMG/method-overview.png" height="1400">
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><hgroup>
+<h2>处理流程</h2>
+
+</hgroup><article>
+
+<img src="./IMG/MethodologyDiagram.png" height="1400">
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>表格-Latest</h2>
+<ul>
+<li>描述信息<ul>
+<li>表名/标题</li>
+<li>脚注/footer/legend</li>
+</ul>
+</li>
+<li>导航栏<ul>
+<li>row header/stub</li>
+<li>super-row/sub-row-header</li>
+<li>column header</li>
+</ul>
+</li>
+<li>表格数据<br><img src="./IMG/table-element.png" height="270"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<p>在这论文中，王的定义已被略微修改，stub head属于stub。
+值得一提的是，当然，并不是所有表格都会存在这四部分。例如，对于很大比例的表格，stub和row headers都可以不存在，the column headers are not “boxed”.。除了这些定义之外，本论文工作采用表格定义：header, column, row, title, caption, superheader,nested header, subheader, block, cell and element.。图1说明了这些定义。</p>
+<p>element 指的是PDF page 中的一个词或者数字。表格中的cell和element的区别在于 一个cell中会包含多个element.一个block 包含多个 cell。尽管 title 和caption可能并不是表格的一部分，由于包含了表格内容的重要信息，就包含在定义和提取过程中了，尤其是需要对表格数据进行功能、语义处理就特别需要提取这些信息并且与表格进行关联。</p>
+<p>superheader 是一种跨多行并且在他之下会有其他column header (typically nested headers, each associated with a single column).
+A subheader is a cell in a table that usually exists on a row that contains no table body elements, and it is associated with all the stub elements below it, or until the next subheader below is found. Only in tables where the stub contains more than one column, the subheaders may exist on body data containing rows.
+The left-to-right style of writing used by all western languages, is guarantee enough that the stub can be trusted to be located at the left end of the table, in Column 1. There are of course exceptions, but the percentage of such tables, where the stub columns are not at the left end of the table is negligible. Slightly more commonly, a duplicate of the stub can exist in the middle of, or at the rightmost column of a table.</p>
+
+</section>
+</aside><section class="slide-wrapper"><article>
+<h2>表格-Hurst</h2>
+<ul>
+<li>(i) the stub that contains the row- and subheaders;</li>
+<li>(ii) the boxhead that contains the column headers (excluding the stub head);</li>
+<li>(iii) the stub head that contains the header for the stub</li>
+<li>(iv) the body that contains the actual data of the table
+<img src="./IMG/table-anatomy.png" height="450"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><hgroup>
+<h2>表格模型-List</h2>
+
+</hgroup><article>
+
+<ul>
+<li>List列表形式的表格
+<img src="./IMG/table-list.png" height="750"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><hgroup>
+<h2>表格模型-Matrix</h2>
+
+</hgroup><article>
+
+<ul>
+<li>Matrix矩阵形式的表格
+<img src="./IMG/table-matrix.png" height="750"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><hgroup>
+<h2>表格模型-Super-row</h2>
+
+</hgroup><article>
+
+<ul>
+<li>Super-row形式的表格
+<img src="./IMG/table-superrow.png" height="750"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><hgroup>
+<h2>表格模型-multi-tables</h2>
+
+</hgroup><article>
+
+<div class="columns-3">
+<img src="./IMG/multi-table2.png" height="1750">
+</div>
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<ul>
+<li>ref
+启发式主要依赖：the arrangement of cells, spanning cells, a presence of special characters (e.g. horizontal lines) or empty cells, cell similarity。<ul>
+<li>1.Identifying table boundaries in digital documents via sparse line detection.</li>
+<li>2.A comparison of two unsupervised table recognition methods from digital scientific articles</li>
+<li>3.Detecting Table Region in PDF Documents Using Distant Supervision</li>
+<li>1.基于行中是否存在空白、行中的对齐、行与行之间的模式的相似度等结构化信息的启发法</li>
+<li>2.基于文本行中特殊字符的比例、行内行间的相对位置等信息的结构化信息的启发法</li>
+<li>3.基于关键词、阅读顺序、行的稀疏程度等特征用于表格定位。</li>
+<li>4.基于决策树、HMM、CRF的版面、布局特征等机器学习方法来进行表格定位，比如行列数量、交叉点的类型、边框和单元格的存在与否、文本的左右对齐、行间距、单元格内容的相似性和重复性、图片/超链接/控件存在与否、表头是否存在、标题等。</li>
+<li>Automatic selection of table areas in documents for information extraction</li>
+<li>2000博士论文-the interpretation of tables in text</li>
+<li>2015-Table understanding using a rule engine</li>
+<li>2015-On methods and tools of table detection, extraction and annotation in PDF documents</li>
+<li>2015-TEXUS: a task-based approach for table extraction and understanding</li>
+<li>2016- A corpus of tables in full-text biomedical research publications</li>
+<li>optical character recognition：1999：T-recs table recognition and validation approach.</li>
+<li>decision trees：1999：Learning to recognize tables in free text.</li>
+<li>Support Vector Machines：2008：Discriminating meaningful web tables from decorative tables using a composite kernel.</li>
+<li>heuristics：2005： pdf2table: A method to extract table information from pdf
+*</li>
+</ul>
+</li>
+</ul>
+
+</section>
+</aside><section class="slide-wrapper"><hgroup>
+<h2>表格检测 &amp;&amp;Physical Layout Analysis</h2>
+
+</hgroup><article>
+
+<ul>
+<li>目标：区分哪些区域是表格 哪些不是(是文本text、图片image、图表chart)</li>
+<li>Non-DL<ul>
+<li>contiguous lines 1</li>
+<li>contiguous text blocks 2</li>
+<li>distant supervision 3</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<ul>
+<li>ref<ul>
+<li>4.Physical Layout Analysis of Partly Annotated Newspaper Images</li>
+</ul>
+</li>
+</ul>
+
+</section>
+</aside><section class="slide-wrapper"><hgroup>
+<h2>表格检测 &amp;&amp;Physical Layout Analysis  续</h2>
+
+</hgroup><article>
+
+<ul>
+<li><p>目标：区分哪些区域是表格 哪些不是(是文本text、图片image、图表chart)</p>
+</li>
+<li><p>DL    </p>
+<ul>
+<li>决策树、SVM、启发式(Unsupervised vs supervised）</li>
+<li></li>
+<li>DIA 、region sementation( pixel based or texture based segmentation 4) 、treat pdf page as image</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<p>启发式:cells positions, its neighbors, content type, surrounding XML tags and XML attributes (such as span).</p>
+<ul>
+<li>ref<ul>
+<li>1.Table structure recognition and its evaluation</li>
+<li>2.A comparison of two unsupervised table recognition methods from digital scientific articles</li>
+<li>3.Hierarchical representation of optically scanned documents.</li>
+<li>Disentangling the structure of tables in scientific literature</li>
+<li>2014——Recognition of Tables and Forms</li>
+<li>2018——Hybrid methodology for information extraction from tables in the biomedical literature</li>
+</ul>
+</li>
+</ul>
+
+</section>
+</aside><section class="slide-wrapper"><hgroup>
+<h2>表格功能性分析 &amp;&amp; logical layout analysis</h2>
+
+</hgroup><article>
+
+<ul>
+<li>目标：区分哪些单元格是表名、标题、表头、行和列、单元格网格结构、单元格间的关系 重构表格逻辑结构</li>
+<li>确定表格类型-List、Matrix、super-row、multi-table</li>
+<li>DL<ul>
+<li>决策树、CRF</li>
+<li>需要标记好的训练数据</li>
+</ul>
+</li>
+<li>启发式（版面+领域知识）<ul>
+<li>word clustering 1</li>
+<li>partitioning the projection histograms 2 &amp;&amp;  X-Y cut 3</li>
+<li>针对表格类型的规则</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<ul>
+<li>ref<ul>
+<li>4.An Agent-Based Approach to Table Recognition and Interpretation</li>
+</ul>
+</li>
+</ul>
+
+</section>
+</aside><section class="slide-wrapper"><hgroup>
+<h2>表格功能性分析 &amp;&amp; logical layout analysis续</h2>
+
+</hgroup><article>
+
+<ul>
+<li>目标：区分哪些单元格是表名、标题、表头、行和列、单元格网格结构、单元格间的关系 重构表格逻辑结构</li>
+<li>表头识别<ul>
+<li>数字</li>
+<li>重复</li>
+<li>字母</li>
+<li>其他(数据类型、字体大小、文本对齐方式、分割线、子表头等)</li>
+</ul>
+</li>
+<li>Table Identification Guidelines 4</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<ul>
+<li>ref<ul>
+<li>1.Automatic hidden-web table interpretation by sibling page comparison</li>
+<li>2.“Design of an end-to-end method to extract information from tables</li>
+<li>3.Segmenting Tables via Indexing of Value Cells by Table Headers</li>
+<li>4.Recovering semantics of tables on the web</li>
+<li>2011 Recovering Semantics of Tables on the Web</li>
+<li>2015-[PDF] Recovering the Semantics of Tabular Web Data</li>
+<li>A Position-Based Method for the Extraction of Financial Information in PDF Documents</li>
+<li>TAO: System for Table Detection and Extraction from PDF Documents.</li>
+<li>2015博士论文——AUTOMATED STRUCTURAL AND SPATIAL COMPREHENSION OF DATA TABLES</li>
+<li>博士论文——THE TABLE OBJECT:AN EPISTEMOLOGICAL, COGNITIVE, AND DIDACTIC STUDY</li>
+<li>2015——Rule-based table analysis and interpretation
+Domain-specific vocabularies, topologies, and ontologies</li>
+</ul>
+</li>
+</ul>
+
+</section>
+</aside><section class="slide-wrapper"><hgroup>
+<h2>表格语义分析</h2>
+
+</hgroup><article>
+
+<ul>
+<li>目标：区分单元格中数据的概念、属性、以及相互之间的关系</li>
+<li>不同层次<ul>
+<li>表格业务类型区分(化验单、发票等)</li>
+<li>单元格取值类型 (such as number, currency, percentage, named entity, and non-numeric words)</li>
+<li>keywords list</li>
+<li>domain specific ontology and lexicons 1</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>信息抽取</h2>
+<ul>
+<li>从表格中提取感兴趣的变量、变量值</li>
+<li>模板
+<img src="./IMG/extraction-template.png" height="750"></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>抽取患者数量</h2>
+<ul>
+<li>启发式方法{:&amp;.flexbox.vleft}</li>
+<li>检索标题、表头、单元格</li>
+<li>针对标题<ul>
+<li>n = %d</li>
+<li>%d Adj*（patients|participants|subjects|individuals）</li>
+</ul>
+</li>
+<li>针对表头<ul>
+<li>n = %d</li>
+<li>can be partial,needs adding up</li>
+</ul>
+</li>
+<li>针对单元格<ul>
+<li>stub contains defined word or phrase</li>
+<li>can be partial,needs adding up</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>抽取BMI数据</h2>
+<ul>
+<li>根据关键词列表(BMI,body mass index)和黑名单(change,increase){:&amp;.flexbox.vleft}</li>
+<li>stub、表头中存在关键词意味着存在数据的可能性</li>
+<li>取值范围为14-40</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>抽取患者体重</h2>
+<ul class="flexbox vleft">
+<li>根据关键词列表()和黑名单()</li>
+<li>stub、表头中存在关键词意味着存在数据的可能性</li>
+<li>存在于黑名单中的词则不是</li>
+<li>取值范围不管用<ul>
+<li>有人可以是40-150公斤</li>
+<li>lbs/英磅：80-130lbs</li>
+<li>婴儿:1500-5000g</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide hasnote"><aside class="note">
+<section>
+<p>演示地址：
+<a href="http://gnteam.cs.manchester.ac.uk/demos/table_explorer/index.php" target="_blank">http://gnteam.cs.manchester.ac.uk/demos/table_explorer/index.php</a></p>
+
+</section>
+</aside><section class="slide-wrapper"><article>
+<h2>结果</h2>
+<ul class="flexbox vleft">
+<li>语料中包括1273份文档，3573个表格</li>
+<li>每个表格平均80个单元格</li>
+<li>功能性、结构处理的评估<ul>
+<li>每种表格随机选择100个</li>
+</ul>
+</li>
+<li>信息抽取的评估<ul>
+<li>患者数量<ul>
+<li>758 contained data</li>
+<li>50份随机文档</li>
+</ul>
+</li>
+<li>BMI和体重<ul>
+<li>113份文档包含此类信息</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>功能性分析的结果</h2>
+<img src="./IMG/functional-analysis-result.png"height="750">
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>信息抽取的结果</h2>
+<img src="./IMG/information-extraction-result.png"height="750">
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>讨论</h2>
+<ul class="flexbox vleft">
+<li>Better scoped values，such as BMI can be modelled-better performance</li>
+<li>白名单、黑名单定义要尽可能的完整</li>
+<li>呈现格式和方法的多样性</li>
+<li>易产生误解的样式</li>
+<li>整体结果还很不错</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>总结</h2>
+<ul class="flexbox vleft">
+<li>利用大规模表格数据挖掘从临床试验采集人群信息</li>
+<li>根据版面对表格进行分类</li>
+<li>仅以患者数量、BMI、体重为例进行了演示</li>
+<li>成果显著</li>
+</ul>
+
+</article></section></slide>
+        
+
+        <!-- <slide class="slide logoslide dark nobackground">
+            <article class="flexbox vcenter">
+                <h2 style="color: white;">Powered By nodeppt v1.4.5</h2>
+            </article>
+        </slide> -->
+        <div class="slideTip" id="tip"></div>
+    </slides>
+</div>
+<canvas id="drawBoard" class="draw-board" width="900" height="700"></canvas>
+<div class="progress"><span id="progress"></span></div>
+<div id="_buttons">
+    <div class="_btn-box" id="_btn-box" style="display:none;">
+        <button class="fa fa-arrow-circle-left" id="_btn-prev"></button>
+        <button class="fa fa-arrow-circle-right" id="_btn-next"></button>
+        <button class="fa fa-paint-brush" id="_btn-brush"></button>
+        <button class="fa fa-compress" id="_btn-overview" data-toggle="fa fa-expand"></button>
+    </div>
+    <button class="fa fa-bars" id="_btn-bar"  data-toggle="fa fa-close"></button>
+</div>
+<script src="./js/mixjs/lib/mix.0.3.0.min.js"></script>
+<script>
+    var ASSET_RELATIVE_DIR = ".";
+</script>
+<script>
+var base = location.protocol + '//' + location.host;
+
+var path = (location.pathname + '#').split('/').filter(function(v){
+    return !!v;
+});
+path.pop();
+path = path.join('/');
+if (typeof ASSET_RELATIVE_DIR === 'string') {
+    path = path + '/' + ASSET_RELATIVE_DIR;
+}
+MixJS.config({
+    baseURL: [ base, path, 'js'].join('/')+'/'
+});
+
+</script>
+<script src="./js/mixjs/lib/event/broadcast.js"></script>
+<script src="./js/nodeppt.js"></script>
+<script>
+Slide.init({
+    containerID: 'container',
+    drawBoardID: 'drawBoard',
+    slideClass: '.slide',
+    buildClass: '.build',
+    progressID: 'progress',
+    transition: 'slide3',
+    width: 1100,
+    dir: './',
+    
+    //打开下面的注释就开启postMessage方式
+    //访问网址127.0.0.1:8080/ppt/demo#client
+    control:{
+        type: 'postMessage',
+        args:{
+            isControl:  false
+        }
+    },
+    
+    tipID: 'tip'
+});
+MixJS.loadJS('highlight/highlight.pack.js',function(){
+    hljs.tabReplace = '  ';
+    hljs.initHighlightingOnLoad();
+});
+</script>
+<script src="./js/demo.js"></script>
+<link rel="stylesheet" href="./css/demo.css">
+<script src="./js/zoom.js"></script>
+
+<!-- MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  config: ["TeX-AMS-MML_HTMLorMML.js"],
+  tex2jax: {inlineMath: [['\\(','\\)']]}});
+  //['$','$'], 避免货币价格冲突
+</script>
+<script type="text/javascript" src="./js/mathjax/MathJax.js"></script>
+
+<!--placeholder-->
+</body>
+</html>
